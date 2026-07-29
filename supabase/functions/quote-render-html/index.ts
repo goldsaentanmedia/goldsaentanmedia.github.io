@@ -1,6 +1,12 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { createClient } from 'jsr:@supabase/supabase-js@2'
-import { DEFAULT_NOTES, QuoteData, QuoteItem, renderQuotationHtml } from './template.ts'
+import {
+  DEFAULT_NOTES,
+  DEFAULT_PAYMENT_TERMS,
+  QuoteData,
+  QuoteItem,
+  renderQuotationHtml,
+} from './template.ts'
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -13,33 +19,39 @@ const html = (body: string, status = 200) =>
 
 /** ตัวอย่างข้อมูลสำหรับ ?preview=1 ใช้ตรวจเลย์เอาต์โดยไม่ต้องมีใบเสนอราคาจริงในฐานข้อมูล */
 const SAMPLE: QuoteData = {
-  doc_no: 'QT2026050029',
-  issue_date: '2026-07-28',
-  credit_days: 0,
-  issued_by: 'พสิษฐ์ ศิริทองแสนตัน',
-  customer_name: 'บริษัท ตัวอย่าง จำกัด (สำนักงานใหญ่)',
-  customer_address: '75/32-33 หมู่ 6 ตำบลรัษฎา อำเภอเมือง จังหวัดภูเก็ต 83000',
-  customer_tax_id: '0835568007571',
+  doc_no: 'QT2026070002',
+  issue_date: '2026-07-23',
+  seller: 'นายพสิษฐ์ ศิริทองแสนตัน',
+  customer_name: 'บริษัท เซเว่น เบอร์รี่ จำกัด',
+  customer_address: '28 ซอยรมณีย์ ตำบลตลาดใหญ่ อำเภอเมืองภูเก็ต จังหวัดภูเก็ต 83000',
+  customer_tax_id: '0835566039611',
   items: [
     {
       description:
-        'Client: Odyssey\nMedia ID: GST-HKT101\nPackage: Business Package\nPlan: Monthly (1 Month)\nDuration: 2 Mins/Hours\nCampaign Period: (09/07/2026 – 08/08/2026)',
-      qty: 1,
+        'Advertising Media (DOOH)/Semi Package - Annual/15Sec\nMedia ID: GST-HKT101\nPackage: Semi Package\nPlan: Quarterly (12 Month)\nDuration: 15 Sec/Spot\nCampaign Period: (01/08/2026 – 31/07/2027)',
+      qty: 12,
       unit: 'เดือน',
-      unit_price: 55000,
-      amount: 55000,
+      unit_price: 22000,
+      amount: 264000,
     },
   ],
-  subtotal: 55000,
-  discount_percent: 20,
-  discount_amount: 11000,
+  subtotal: 264000,
+  discount_percent: 30,
+  discount_amount: 79200,
   vat_percent: 7,
-  vat: 3080,
-  total: 47080,
+  vat: 12936,
+  total: 197736,
   wht_percent: 2,
-  wht_amount: 880,
-  net_payable: 46200,
+  wht_amount: 3696,
+  net_payable: 194040,
   notes: DEFAULT_NOTES,
+  payment_terms: DEFAULT_PAYMENT_TERMS,
+}
+
+const asLines = (v: unknown, fallback: string[]): string[] => {
+  if (Array.isArray(v)) return v as string[]
+  if (typeof v === 'string' && v.trim()) return v.split('\n')
+  return fallback
 }
 
 Deno.serve(async (req) => {
@@ -73,32 +85,26 @@ Deno.serve(async (req) => {
     if (error || !q) return html('<p>quote not found</p>', 404)
 
     const raw = (q.raw || {}) as Record<string, unknown>
-    const subtotal = Number(q.subtotal) || 0
-    const discountAmount = Number(raw.discount_amount) || 0
 
     const data: QuoteData = {
       doc_no: String(q.doc_no || ''),
       issue_date: String(q.issue_date || ''),
-      credit_days: Number(raw.credit_days) || 0,
-      issued_by: String(raw.issued_by || ''),
+      seller: String(raw.seller || raw.issued_by || ''),
       customer_name: String(q.customer_name || ''),
       customer_address: String(raw.customer_address || ''),
       customer_tax_id: String(raw.customer_tax_id || ''),
       items: (raw.items as QuoteItem[]) || [],
-      subtotal,
+      subtotal: Number(q.subtotal) || 0,
       discount_percent: Number(raw.discount_percent) || 0,
-      discount_amount: discountAmount,
+      discount_amount: Number(raw.discount_amount) || 0,
       vat_percent: Number(raw.vat_percent) || 0,
       vat: Number(q.vat) || 0,
       total: Number(q.total) || 0,
       wht_percent: Number(raw.wht_percent) || 0,
       wht_amount: Number(raw.wht_amount) || 0,
       net_payable: Number(raw.net_payable) || 0,
-      notes: Array.isArray(raw.notes)
-        ? (raw.notes as string[])
-        : raw.notes
-          ? String(raw.notes).split('\n')
-          : DEFAULT_NOTES,
+      notes: asLines(raw.notes, DEFAULT_NOTES),
+      payment_terms: asLines(raw.payment_terms, DEFAULT_PAYMENT_TERMS),
     }
 
     return html(renderQuotationHtml(data, { autoPrint }))
