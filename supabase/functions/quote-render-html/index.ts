@@ -48,8 +48,9 @@ const SAMPLE: QuoteData = {
   payment_terms: DEFAULT_PAYMENT_TERMS,
 }
 
+/** หน้าฟอร์มส่ง [] มาเมื่อเว้นช่องไว้ ซึ่งต้องหมายถึง "ใช้ข้อความมาตรฐาน" ไม่ใช่ "ไม่มีหมายเหตุ" */
 const asLines = (v: unknown, fallback: string[]): string[] => {
-  if (Array.isArray(v)) return v as string[]
+  if (Array.isArray(v)) return v.length ? (v as string[]) : fallback
   if (typeof v === 'string' && v.trim()) return v.split('\n')
   return fallback
 }
