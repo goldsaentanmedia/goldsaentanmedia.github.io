@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>สร้างใบเสนอราคา</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #C6355C; --line: #dde3ea; --ink: #1f2933; --muted: #6b7683;
+    --bg: #f4f6f9; --field: #fff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: 'Sarabun', 'Noto Sans Thai', sans-serif; font-size: 15px;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 20px 18px 60px; }
+
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap; margin-bottom: 18px;
+  }
+  .docno { font-size: 26px; font-weight: 700; color: var(--brand); }
+  .docno input {
+    font: inherit; color: inherit; border: 1px solid transparent; background: transparent;
+    padding: 2px 6px; border-radius: 6px; width: 15ch;
+  }
+  .docno input:hover, .docno input:focus { border-color: var(--line); background: #fff; outline: none; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  button {
+    font: inherit; padding: 9px 18px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--line); background: #fff; color: var(--ink);
+  }
+  button:hover { border-color: #b9c2cc; }
+  button.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+  button.primary:hover { filter: brightness(1.07); }
+  button.ghost { background: transparent; }
+
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+  .grid { display: grid; gap: 16px 24px; }
+  .cols-2 { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 820px) { .cols-2 { grid-template-columns: 1fr; } }
+
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 5px; }
+  input[type=text], input[type=date], input[type=number], textarea, select {
+    font: inherit; width: 100%; padding: 8px 10px; border: 1px solid var(--line);
+    border-radius: 8px; background: var(--field); color: inherit;
+  }
+  input:focus, textarea:focus, select:focus { outline: 2px solid rgba(198,53,92,.25); border-color: var(--brand); }
+  textarea { resize: vertical; }
+  .field + .field { margin-top: 14px; }
+
+  h2 { font-size: 15px; margin: 0 0 14px; color: var(--brand); }
+
+  table.lines { width: 100%; border-collapse: collapse; }
+  table.lines th {
+    text-align: left; font-size: 13px; font-weight: 600; color: var(--muted);
+    padding: 0 8px 8px; border-bottom: 1px solid var(--line); white-space: nowrap;
+  }
+  table.lines th.r, table.lines td.r { text-align: right; }
+  table.lines td { padding: 10px 8px; vertical-align: top; border-bottom: 1px solid var(--line); }
+  table.lines td.idx { color: var(--muted); padding-top: 18px; width: 34px; text-align: center; }
+  /* ต้องเจาะจงกว่า input[type=...] ไม่งั้นโดน width:100% ทับ */
+  input.w-qty { width: 92px; } input.w-unit { width: 96px; } input.w-price { width: 130px; }
+  table.lines td:nth-child(3), table.lines th:nth-child(3) { width: 108px; }
+  table.lines td:nth-child(4), table.lines th:nth-child(4) { width: 112px; }
+  table.lines td:nth-child(5), table.lines th:nth-child(5) { width: 146px; }
+  table.lines td:nth-child(6), table.lines th:nth-child(6) { width: 110px; }
+  table.lines td:nth-child(7), table.lines th:nth-child(7) { width: 40px; }
+  .amt { padding-top: 18px; white-space: nowrap; }
+  .del {
+    border: none; background: transparent; color: var(--muted); font-size: 20px;
+    line-height: 1; padding: 6px 8px; cursor: pointer;
+  }
+  .del:hover { color: var(--brand); }
+
+  .totals { margin-left: auto; width: 380px; max-width: 100%; }
+  .trow { display: flex; align-items: center; gap: 10px; padding: 5px 0; }
+  .trow .k { flex: 1; text-align: right; color: var(--muted); }
+  .trow .k.brand { color: var(--brand); }
+  .trow .pc { width: 74px; }
+  .trow .v { width: 120px; text-align: right; font-variant-numeric: tabular-nums; }
+  .trow.grand { border-top: 1px solid var(--line); margin-top: 6px; padding-top: 10px; font-weight: 700; font-size: 17px; }
+  .trow.grand .v { color: var(--brand); }
+
+  /* ตัวอย่างเอกสาร */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(20,25,32,.55);
+    display: none; flex-direction: column; z-index: 50;
+  }
+  .overlay.open { display: flex; }
+  .ovbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; padding: 12px 18px; background: #fff; border-bottom: 1px solid var(--line);
+  }
+  .ovbar .t { font-weight: 700; color: var(--brand); }
+  .overlay iframe { flex: 1; width: 100%; border: 0; background: #eceff1; }
+  .hint { font-size: 13px; color: var(--muted); }
+  .err { color: #b3261e; font-size: 14px; padding: 10px 18px; background: #fdeceb; display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="docno">
+      <input id="doc_no" value="QT2026070003" aria-label="เลขที่เอกสาร">
+    </div>
+    <div class="actions">
+      <button class="ghost" id="btn-preview">ดูตัวอย่าง</button>
+      <button id="btn-print">พิมพ์</button>
+      <button id="btn-download">ดาวน์โหลด PDF</button>
+      <button class="primary" id="btn-save">บันทึกเอกสาร</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="grid cols-2">
+      <div>
+        <h2>ลูกค้า</h2>
+        <div class="field">
+          <label for="customer_name">ชื่อลูกค้า</label>
+          <input type="text" id="customer_name" placeholder="บริษัท ... จำกัด">
+        </div>
+        <div class="field">
+          <label for="customer_address">ที่อยู่</label>
+          <textarea id="customer_address" rows="3" placeholder="เลขที่ ถนน ตำบล อำเภอ จังหวัด รหัสไปรษณีย์"></textarea>
+        </div>
+        <div class="field">
+          <label for="customer_tax_id">เลขประจำตัวผู้เสียภาษี</label>
+          <input type="text" id="customer_tax_id" inputmode="numeric">
+        </div>
+      </div>
+
+      <div>
+        <h2>ข้อมูลเอกสาร</h2>
+        <div class="field">
+          <label for="issue_date">วันที่</label>
+          <input type="date" id="issue_date">
+        </div>
+        <div class="field">
+          <label for="credit_days">เครดิต (วัน)</label>
+          <input type="number" id="credit_days" value="0" min="0" step="1">
+        </div>
+        <div class="field">
+          <label for="due_date">ครบกำหนด</label>
+          <input type="date" id="due_date" readonly>
+        </div>
+        <div class="field">
+          <label for="seller">พนักงานขาย</label>
+          <input type="text" id="seller" value="นายพสิษฐ์ ศิริทองแสนตัน">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>รายการ</h2>
+    <table class="lines">
+      <thead>
+        <tr>
+          <th></th>
+          <th>ชื่อสินค้า / รายละเอียด</th>
+          <th class="r">จำนวน</th>
+          <th>หน่วย</th>
+          <th class="r">ราคาต่อหน่วย</th>
+          <th class="r">ราคารวม</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="lines"></tbody>
+    </table>
+    <p><button id="btn-add">+ เพิ่มรายการ</button></p>
+
+    <div class="totals">
+      <div class="trow"><span class="k brand">รวมเป็นเงิน</span><span class="pc"></span><span class="v" id="t-subtotal">0.00</span></div>
+      <div class="trow">
+        <span class="k brand">ส่วนลด</span>
+        <input class="pc" type="number" id="discount_percent" value="0" min="0" max="100" step="0.01">
+        <span class="v" id="t-discount">0.00</span>
+      </div>
+      <div class="trow"><span class="k brand">จำนวนเงินหลังหักส่วนลด</span><span class="pc"></span><span class="v" id="t-after">0.00</span></div>
+      <div class="trow">
+        <span class="k brand">ภาษีมูลค่าเพิ่ม</span>
+        <input class="pc" type="number" id="vat_percent" value="7" min="0" step="0.01">
+        <span class="v" id="t-vat">0.00</span>
+      </div>
+      <div class="trow grand"><span class="k">จำนวนเงินรวมทั้งสิ้น</span><span class="pc"></span><span class="v" id="t-total">0.00</span></div>
+      <div class="trow">
+        <span class="k brand">หักภาษี ณ ที่จ่าย</span>
+        <input class="pc" type="number" id="wht_percent" value="0" min="0" step="0.01">
+        <span class="v" id="t-wht">0.00</span>
+      </div>
+      <div class="trow grand"><span class="k">ยอดชำระ</span><span class="pc"></span><span class="v" id="t-net">0.00</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="grid cols-2">
+      <div>
+        <h2>หมายเหตุ</h2>
+        <textarea id="notes" rows="5"></textarea>
+        <p class="hint">บรรทัดละ 1 ข้อ · เว้นว่างไว้จะใช้ข้อความมาตรฐาน</p>
+      </div>
+      <div>
+        <h2>เงื่อนไขการชำระค่าบริการ</h2>
+        <textarea id="payment_terms" rows="5"></textarea>
+        <p class="hint">บรรทัดละ 1 ข้อ · เว้นว่างไว้จะใช้ข้อความมาตรฐาน</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="ovbar">
+    <span class="t" id="ov-title">ใบเสนอราคา</span>
+    <span class="actions">
+      <button id="ov-print">พิมพ์ / บันทึกเป็น PDF</button>
+      <button class="ghost" id="ov-close">ปิดหน้าต่าง</button>
+    </span>
+  </div>
+  <div class="err" id="ov-err"></div>
+  <iframe id="ov-frame" title="ตัวอย่างใบเสนอราคา"></iframe>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://wkvrgjnbpifktebdsytb.supabase.co'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrdnJnam5icGlma3RlYmRzeXRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMTI3NDgsImV4cCI6MjA5NjU4ODc0OH0.kKfy0vTJEon2JpfhFZ1D04rRhnBy6cdMNRkPd3EqfbQ'
+const RENDER_URL = SUPABASE_URL + '/functions/v1/quote-render-html'
+
+const $ = (id) => document.getElementById(id)
+const money = (n) => Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+const num = (v) => { const n = parseFloat(v); return isNaN(n) ? 0 : n }
+
+/* ---------- รายการสินค้า ---------- */
+
+function lineRow() {
+  const tr = document.createElement('tr')
+  tr.innerHTML =
+    '<td class="idx"></td>' +
+    '<td><textarea rows="3" class="f-desc" placeholder="ชื่อสินค้า&#10;รายละเอียดบรรทัดถัดไป"></textarea></td>' +
+    '<td><input type="number" class="f-qty w-qty" step="0.01" min="0" value="1"></td>' +
+    '<td><input type="text" class="f-unit w-unit"></td>' +
+    '<td><input type="number" class="f-price w-price" step="0.01" min="0" value="0"></td>' +
+    '<td class="r amt f-amt">0.00</td>' +
+    '<td><button class="del" title="ลบรายการ">&times;</button></td>'
+  tr.querySelector('.del').onclick = () => { tr.remove(); recalc() }
+  tr.querySelectorAll('input, textarea').forEach((el) => el.addEventListener('input', recalc))
+  return tr
+}
+
+function addLine() { $('lines').appendChild(lineRow()); recalc() }
+
+function readLines() {
+  return [...$('lines').children].map((tr) => {
+    const qty = num(tr.querySelector('.f-qty').value)
+    const unit_price = num(tr.querySelector('.f-price').value)
+    return {
+      description: tr.querySelector('.f-desc').value,
+      qty, unit: tr.querySelector('.f-unit').value,
+      unit_price, amount: Math.round(qty * unit_price * 100) / 100,
+    }
+  })
+}
+
+/* ---------- คำนวณ ---------- */
+
+function recalc() {
+  const items = readLines()
+  ;[...$('lines').children].forEach((tr, i) => {
+    tr.querySelector('.idx').textContent = i + 1
+    tr.querySelector('.f-amt').textContent = money(items[i].amount)
+  })
+
+  const subtotal = items.reduce((s, it) => s + it.amount, 0)
+  const discount = Math.round(subtotal * num($('discount_percent').value)) / 100
+  const after = subtotal - discount
+  const vat = Math.round(after * num($('vat_percent').value)) / 100
+  const total = after + vat
+  const wht = Math.round(after * num($('wht_percent').value)) / 100
+  const net = total - wht
+
+  $('t-subtotal').textContent = money(subtotal)
+  $('t-discount').textContent = money(discount)
+  $('t-after').textContent = money(after)
+  $('t-vat').textContent = money(vat)
+  $('t-total').textContent = money(total)
+  $('t-wht').textContent = money(wht)
+  $('t-net').textContent = money(net)
+
+  return { items, subtotal, discount, after, vat, total, wht, net }
+}
+
+function syncDue() {
+  const d = $('issue_date').value
+  if (!d) return
+  const dt = new Date(d + 'T00:00:00')
+  dt.setDate(dt.getDate() + Math.max(0, parseInt($('credit_days').value || '0', 10)))
+  $('due_date').value = dt.toISOString().slice(0, 10)
+}
+
+const asLines = (s) => s.split('\n').map((x) => x.trim()).filter(Boolean)
+
+function collect() {
+  const t = recalc()
+  return {
+    doc_no: $('doc_no').value,
+    issue_date: $('issue_date').value,
+    seller: $('seller').value,
+    customer_name: $('customer_name').value,
+    customer_address: $('customer_address').value,
+    customer_tax_id: $('customer_tax_id').value,
+    items: t.items,
+    subtotal: t.subtotal,
+    discount_percent: num($('discount_percent').value),
+    discount_amount: t.discount,
+    vat_percent: num($('vat_percent').value),
+    vat: t.vat,
+    total: t.total,
+    wht_percent: num($('wht_percent').value),
+    wht_amount: t.wht,
+    net_payable: t.net,
+    notes: asLines($('notes').value),
+    payment_terms: asLines($('payment_terms').value),
+  }
+}
+
+/* ---------- ตัวอย่างเอกสาร ---------- */
+
+let previewReady = false
+
+async function openPreview(thenPrint) {
+  const ov = $('overlay'), err = $('ov-err')
+  err.style.display = 'none'
+  ov.classList.add('open')
+  $('ov-title').textContent = $('doc_no').value || 'ใบเสนอราคา'
+  previewReady = false
+
+  try {
+    const res = await fetch(RENDER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + SUPABASE_ANON_KEY },
+      body: JSON.stringify({ data: collect() }),
+    })
+    if (!res.ok) throw new Error('เรนเดอร์เอกสารไม่สำเร็จ (HTTP ' + res.status + ')')
+    const doc = $('ov-frame').contentDocument
+    doc.open(); doc.write(await res.text()); doc.close()
+    previewReady = true
+    if (thenPrint) setTimeout(printPreview, 500)
+  } catch (e) {
+    err.textContent = String(e.message || e)
+    err.style.display = 'block'
+  }
+}
+
+function printPreview() {
+  if (!previewReady) return
+  const w = $('ov-frame').contentWindow
+  w.focus(); w.print()
+}
+
+/* ---------- บันทึกลงฐานข้อมูล ---------- */
+
+async function save() {
+  const d = collect()
+  const row = {
+    doc_type: 'quotation',
+    doc_no: d.doc_no,
+    customer_name: d.customer_name,
+    issue_date: d.issue_date || null,
+    due_date: $('due_date').value || null,
+    subtotal: d.subtotal,
+    vat: d.vat,
+    total: d.total,
+    status: 'draft',
+    source: 'gst',
+    raw: d,
+  }
+  const token = sessionStorage.getItem('sb_access_token') || SUPABASE_ANON_KEY
+  const res = await fetch(SUPABASE_URL + '/rest/v1/finance_documents', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: 'Bearer ' + token,
+      Prefer: 'return=representation',
+    },
+    body: JSON.stringify(row),
+  })
+  if (res.ok) { alert('บันทึกใบเสนอราคาแล้ว'); return }
+  const body = await res.text()
+  alert(
+    res.status === 401 || res.status === 403
+      ? 'บันทึกไม่ได้: ต้องล็อกอินก่อน (ตาราง finance_documents เปิดให้เฉพาะผู้ใช้ที่ผ่านการยืนยันตัวตน)\n\n' + body
+      : 'บันทึกไม่สำเร็จ (HTTP ' + res.status + ')\n\n' + body,
+  )
+}
+
+/* ---------- เริ่มต้น ---------- */
+
+$('btn-add').onclick = addLine
+$('btn-preview').onclick = () => openPreview(false)
+$('btn-print').onclick = () => openPreview(true)
+$('btn-download').onclick = () => openPreview(true)
+$('btn-save').onclick = save
+$('ov-print').onclick = printPreview
+$('ov-close').onclick = () => $('overlay').classList.remove('open')
+;['discount_percent', 'vat_percent', 'wht_percent'].forEach((id) => $(id).addEventListener('input', recalc))
+;['issue_date', 'credit_days'].forEach((id) => $(id).addEventListener('input', syncDue))
+
+$('issue_date').value = new Date().toISOString().slice(0, 10)
+syncDue()
+addLine()
+</script>
+</body>
+</html>

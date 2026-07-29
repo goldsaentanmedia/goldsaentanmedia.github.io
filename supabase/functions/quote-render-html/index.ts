@@ -54,6 +54,37 @@ const asLines = (v: unknown, fallback: string[]): string[] => {
   return fallback
 }
 
+/**
+ * ปรับก้อนข้อมูลดิบให้เป็น QuoteData
+ * ใช้ได้ทั้งแถวจาก finance_documents (ที่ค่าส่วนหนึ่งอยู่ในคอลัมน์ อีกส่วนอยู่ใน raw)
+ * และก้อน JSON ที่ส่งตรงมาจากหน้าฟอร์ม
+ */
+function toQuoteData(src: Record<string, unknown>): QuoteData {
+  const raw = (src.raw || src) as Record<string, unknown>
+  const pick = (k: string) => (src[k] !== undefined ? src[k] : raw[k])
+
+  return {
+    doc_no: String(pick('doc_no') || ''),
+    issue_date: String(pick('issue_date') || ''),
+    seller: String(raw.seller || raw.issued_by || ''),
+    customer_name: String(pick('customer_name') || ''),
+    customer_address: String(raw.customer_address || ''),
+    customer_tax_id: String(raw.customer_tax_id || ''),
+    items: (raw.items as QuoteItem[]) || [],
+    subtotal: Number(pick('subtotal')) || 0,
+    discount_percent: Number(raw.discount_percent) || 0,
+    discount_amount: Number(raw.discount_amount) || 0,
+    vat_percent: Number(raw.vat_percent) || 0,
+    vat: Number(pick('vat')) || 0,
+    total: Number(pick('total')) || 0,
+    wht_percent: Number(raw.wht_percent) || 0,
+    wht_amount: Number(raw.wht_amount) || 0,
+    net_payable: Number(raw.net_payable) || 0,
+    notes: asLines(raw.notes, DEFAULT_NOTES),
+    payment_terms: asLines(raw.payment_terms, DEFAULT_PAYMENT_TERMS),
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
 
@@ -66,10 +97,13 @@ Deno.serve(async (req) => {
     }
 
     // รับ id ได้ทั้งจาก query string (เปิดในแท็บใหม่) และ JSON body (fetch)
+    // ถ้าส่ง data มาเต็มก้อน จะเรนเดอร์จากก้อนนั้นเลย ใช้ตอนกดดูตัวอย่างจากหน้าฟอร์ม
+    // ที่ยังไม่ได้บันทึกลงฐานข้อมูล
     let id = url.searchParams.get('id') || ''
-    if (!id && req.method === 'POST') {
+    if (req.method === 'POST') {
       const body = await req.json().catch(() => ({}))
-      id = String(body.id || '')
+      if (body.data) return html(renderQuotationHtml(toQuoteData(body.data), { autoPrint }))
+      if (!id) id = String(body.id || '')
     }
     if (!id) return html('<p>missing id</p>', 400)
 
@@ -84,30 +118,7 @@ Deno.serve(async (req) => {
       .single()
     if (error || !q) return html('<p>quote not found</p>', 404)
 
-    const raw = (q.raw || {}) as Record<string, unknown>
-
-    const data: QuoteData = {
-      doc_no: String(q.doc_no || ''),
-      issue_date: String(q.issue_date || ''),
-      seller: String(raw.seller || raw.issued_by || ''),
-      customer_name: String(q.customer_name || ''),
-      customer_address: String(raw.customer_address || ''),
-      customer_tax_id: String(raw.customer_tax_id || ''),
-      items: (raw.items as QuoteItem[]) || [],
-      subtotal: Number(q.subtotal) || 0,
-      discount_percent: Number(raw.discount_percent) || 0,
-      discount_amount: Number(raw.discount_amount) || 0,
-      vat_percent: Number(raw.vat_percent) || 0,
-      vat: Number(q.vat) || 0,
-      total: Number(q.total) || 0,
-      wht_percent: Number(raw.wht_percent) || 0,
-      wht_amount: Number(raw.wht_amount) || 0,
-      net_payable: Number(raw.net_payable) || 0,
-      notes: asLines(raw.notes, DEFAULT_NOTES),
-      payment_terms: asLines(raw.payment_terms, DEFAULT_PAYMENT_TERMS),
-    }
-
-    return html(renderQuotationHtml(data, { autoPrint }))
+    return html(renderQuotationHtml(toQuoteData(q), { autoPrint }))
   } catch (e) {
     return html('<p>error: ' + String(e) + '</p>', 500)
   }
