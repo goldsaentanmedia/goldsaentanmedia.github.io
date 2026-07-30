@@ -100,7 +100,7 @@ check('เรียกครั้งที่สองไม่โหลดซ�
 
 console.log('\n-- ขาดบางน้ำหนัก --')
 clearFontCache()
-const partial = fakeStorage(dir, ['CSChatThai-Bold.woff2'])
+const partial = fakeStorage(dir, ['CSChatThaiUIBold.woff2'])
 const partialCss = await documentFontCss(partial.client)
 const partialCount = (partialCss.match(/@font-face/g) || []).length
 check('ที่โหลดได้ยังถูกฝัง', partialCount === 2, `ได้ ${partialCount}`)

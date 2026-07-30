@@ -35,13 +35,16 @@ export const FONT_DIR = 'fonts'
 type Face = { weight: number; file: string }
 
 /**
- * น้ำหนักที่เอกสารใช้ ใช้ตระกูล CS ChatThai (ไม่ใช่ UI) เพราะเป็นตัวที่
- * ออกแบบมาสำหรับงานพิมพ์ ส่วน CSChatThaiUI ทำมาสำหรับหน้าจอ
+ * น้ำหนักที่เอกสารใช้ ใช้ตระกูล CS ChatThaiUI ตามที่เลือกไว้
+ *
+ * ชื่อไฟล์ต้องตรงกับที่อยู่ใน bucket ทุกตัวอักษร Storage แยกตัวพิมพ์เล็กใหญ่
+ * และไม่มีขีดกลางคั่นน้ำหนัก ถ้าตั้งชื่อเพี้ยนจะโหลดไม่เจอแบบเงียบ ๆ
+ * แล้วเอกสารจะถอยไปฟอนต์สำรองโดยไม่มีอะไรฟ้องหน้าจอ ดูสาเหตุได้ใน log
  */
 const FACES: Face[] = [
-  { weight: 300, file: 'CSChatThai-Light.woff2' },
-  { weight: 400, file: 'CSChatThai-Regular.woff2' },
-  { weight: 700, file: 'CSChatThai-Bold.woff2' },
+  { weight: 300, file: 'CSChatThaiUILight.woff2' },
+  { weight: 400, file: 'CSChatThaiUIRegular.woff2' },
+  { weight: 700, file: 'CSChatThaiUIBold.woff2' },
 ]
 
 type Cache = { css: string; at: number }

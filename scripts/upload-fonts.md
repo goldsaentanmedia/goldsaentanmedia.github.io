@@ -14,13 +14,16 @@
 
 | ไฟล์ | น้ำหนัก | ใช้ที่ |
 |---|---|---|
-| `CSChatThai-Light.woff2` | 300 | ข้อความรองในเอกสาร |
-| `CSChatThai-Regular.woff2` | 400 | ตัวหลักทั้งเอกสาร |
-| `CSChatThai-Bold.woff2` | 700 | หัวเรื่องและยอดรวม |
+| `CSChatThaiUILight.woff2` | 300 | ข้อความรองในเอกสาร |
+| `CSChatThaiUIRegular.woff2` | 400 | ตัวหลักทั้งเอกสาร |
+| `CSChatThaiUIBold.woff2` | 700 | หัวเรื่องและยอดรวม |
 
-ใช้ตระกูล **CS ChatThai** ไม่ใช่ CS ChatThaiUI เพราะ UI ออกแบบมาสำหรับหน้าจอ
-ส่วนตัวนี้ทำมาสำหรับงานพิมพ์ (ถ้าจะเก็บชุด UI ขึ้นไปด้วยก็ไม่เสียหาย
-ตัวเรนเดอร์จะไม่ไปอ่าน)
+ใช้ตระกูล **CS ChatThaiUI** ตามที่เลือกไว้
+
+**ชื่อไฟล์ต้องตรงทุกตัวอักษร** Storage แยกตัวพิมพ์เล็กใหญ่ และชื่อที่ใช้ไม่มี
+ขีดกลางคั่นน้ำหนัก (`CSChatThaiUIRegular.woff2` ไม่ใช่ `CSChatThaiUI-Regular.woff2`)
+ถ้าตั้งชื่อเพี้ยนจะโหลดไม่เจอแบบเงียบ ๆ เอกสารยังออกได้แต่ใช้ฟอนต์สำรอง
+โดยไม่มีอะไรฟ้องหน้าจอ ต้องไปดู log ของ Edge Function
 
 ต้นฉบับที่ได้มาเป็น `.otf` แปลงเป็น `.woff2` ก่อน เล็กลงราวสามเท่าและเบราว์เซอร์
 อ่านได้ตรง ๆ แปลงด้วย [fonttools](https://github.com/fonttools/fonttools):
@@ -30,9 +33,9 @@ pip install fonttools brotli
 python - <<'PY'
 from fontTools.ttLib import TTFont
 for src, dst in [
-    ('CSChatThai.otf',      'CSChatThai-Regular.woff2'),
-    ('CSChatThaiLight.otf', 'CSChatThai-Light.woff2'),
-    ('CSChatThaiBold.otf',  'CSChatThai-Bold.woff2'),
+    ('CSChatThaiUI.otf',      'CSChatThaiUIRegular.woff2'),
+    ('CSChatThaiUILight.otf', 'CSChatThaiUILight.woff2'),
+    ('CSChatThaiUIBold.otf',  'CSChatThaiUIBold.woff2'),
 ]:
     f = TTFont(src); f.flavor = 'woff2'; f.save(dst)
 PY
@@ -48,7 +51,7 @@ PY
 
 1. เปิด Supabase Dashboard → **Storage**
 2. **New bucket** ชื่อ `brand-assets` — **ห้ามติ๊ก Public bucket**
-3. สร้างโฟลเดอร์ `fonts` แล้วลากไฟล์ `.woff2` ทั้งสามเข้าไป
+3. สร้างโฟลเดอร์ `fonts` แล้วลากไฟล์ `CSChatThaiUI*.woff2` ทั้งสามเข้าไป
 
 ### ทาง CLI
 
@@ -65,7 +68,7 @@ curl -sS -X POST "$SUPABASE_URL/storage/v1/bucket" \
   -H 'Content-Type: application/json' \
   -d '{"name":"brand-assets","public":false}'
 
-for f in CSChatThai-Light.woff2 CSChatThai-Regular.woff2 CSChatThai-Bold.woff2; do
+for f in CSChatThaiUILight.woff2 CSChatThaiUIRegular.woff2 CSChatThaiUIBold.woff2; do
   curl -sS -X POST "$SUPABASE_URL/storage/v1/object/brand-assets/fonts/$f" \
     -H "Authorization: Bearer $SERVICE_ROLE_KEY" \
     -H 'Content-Type: font/woff2' \
