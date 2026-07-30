@@ -152,7 +152,7 @@ const listBlock = (title: string, lines: string[]) =>
 
 export function renderQuotationHtml(
   d: QuoteData,
-  opts: { autoPrint?: boolean; settings?: unknown } = {},
+  opts: { autoPrint?: boolean; settings?: unknown; fontCss?: string } = {},
 ): string {
   const st: DocumentSettings = opts.settings ? mergeSettings(opts.settings) : DEFAULT_SETTINGS
   const g = st.design
@@ -177,17 +177,20 @@ export function renderQuotationHtml(
 <head>
 <meta charset="utf-8">
 <title>${esc(d.doc_no || title.th)}</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
+${
+    opts.fontCss
+      ? ''
+      : `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">`
+  }
 <style>
-  /* ต้นฉบับใช้ CS ChatThai (ไทยไม่มีหัว) ถ้าเครื่องที่เปิดมีฟอนต์ลงไว้จะถูกใช้ก่อน
-     ถ้าไม่มีจะถอยไป Sarabun ซึ่งเป็นไทยไม่มีหัวเหมือนกัน
+  /* ฟอนต์ CS ChatThai ฝังมาเป็น data URI (ดู fonts.ts) เอกสารจึงหน้าตาเหมือนกัน
+     ทุกเครื่อง รวมถึงตอนแปลงเป็น PDF บนเซิร์ฟเวอร์ที่ไม่มีฟอนต์ลงไว้
 
-     ข้อจำกัดที่ยังแก้ไม่ได้: เซิร์ฟเวอร์ที่เรนเดอร์ PDF ไม่มีฟอนต์ลงไว้
-     จึงได้ Sarabun ความกว้างตัวอักษรต่างจากต้นฉบับ จุดตัดบรรทัดเลื่อน
-     การฝังฟอนต์แก้เรื่องนี้ได้ แต่ต้องหาที่เก็บไฟล์ฟอนต์ที่ไม่ใช่ repo สาธารณะก่อน */
-
+     ถ้าฝังไม่ได้ ตรงนี้จะว่าง แล้วถอยไปตามลำดับใน font-family ด้านล่าง
+     คือฟอนต์ที่ลงในเครื่อง แล้วค่อย Sarabun (ไทยไม่มีหัวเหมือนกัน) ซึ่งดึงจาก
+     Google Fonts เฉพาะกรณีนั้น ไม่ต้องโหลดเปล่าเมื่อฝังสำเร็จ */
+${opts.fontCss || ''}
   :root { --brand: ${brand}; }
 
   @page { size: ${g.paper === 'continuous' ? 'auto' : 'A4 portrait'}; margin: 0; }

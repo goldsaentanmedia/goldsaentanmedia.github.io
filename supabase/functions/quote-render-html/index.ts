@@ -1,5 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { createClient } from 'jsr:@supabase/supabase-js@2'
+import { documentFontCss } from './fonts.ts'
 import {
   DEFAULT_NOTES,
   DEFAULT_PAYMENT_TERMS,
@@ -127,14 +128,19 @@ Deno.serve(async (req) => {
     }
 
     const supabase = admin()
-    const settings = inlineSettings ?? (await loadSettings(supabase).catch(() => null))
+    // โหลดตั้งค่ากับฟอนต์พร้อมกัน ทั้งคู่ไม่ขึ้นแก่กัน และทั้งคู่ล้มได้โดยไม่ทำให้
+    // เอกสารออกไม่ได้ — ตั้งค่าถอยไปค่าเริ่มต้น ฟอนต์ถอยไปฟอนต์สำรอง
+    const [settings, fontCss] = await Promise.all([
+      inlineSettings ?? loadSettings(supabase).catch(() => null),
+      documentFontCss(supabase).catch(() => ''),
+    ])
 
     if (url.searchParams.get('preview') === '1') {
-      return html(renderQuotationHtml(SAMPLE, { autoPrint, settings }))
+      return html(renderQuotationHtml(SAMPLE, { autoPrint, settings, fontCss }))
     }
     // ถ้าส่ง data มาเต็มก้อน จะเรนเดอร์จากก้อนนั้นเลย ใช้ตอนกดดูตัวอย่างจากหน้าฟอร์ม
     // ที่ยังไม่ได้บันทึกลงฐานข้อมูล
-    if (data) return html(renderQuotationHtml(toQuoteData(data), { autoPrint, settings }))
+    if (data) return html(renderQuotationHtml(toQuoteData(data), { autoPrint, settings, fontCss }))
 
     // รับ id ได้ทั้งจาก query string (เปิดในแท็บใหม่) และ JSON body (fetch)
     if (!id) return html('<p>missing id</p>', 400)
@@ -146,7 +152,7 @@ Deno.serve(async (req) => {
       .single()
     if (error || !q) return html('<p>quote not found</p>', 404)
 
-    return html(renderQuotationHtml(toQuoteData(q), { autoPrint, settings }))
+    return html(renderQuotationHtml(toQuoteData(q), { autoPrint, settings, fontCss }))
   } catch (e) {
     return html('<p>error: ' + String(e) + '</p>', 500)
   }

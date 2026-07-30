@@ -1,0 +1,12 @@
+# ไฟล์ฟอนต์ต้องไม่ลงรีโปนี้
+#
+# รีโปนี้เป็น public (goldsaentanmedia.github.io เผยแพร่ผ่าน GitHub Pages)
+# การ commit ไฟล์ฟอนต์ของบุคคลที่สามลงไปเท่ากับเผยแพร่ฟอนต์ต่อสาธารณะ
+# ซึ่งอาจขัดสัญญาอนุญาต ไฟล์ฟอนต์เก็บไว้ใน Supabase Storage แบบ private
+# แล้วให้ Edge Function ดึงมาฝังในเอกสารตอนเรนเดอร์ (ดู scripts/upload-fonts.md)
+*.woff
+*.woff2
+*.otf
+*.ttf
+*.ttc
+*.eot
