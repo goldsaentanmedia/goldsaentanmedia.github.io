@@ -9,6 +9,8 @@
  */
 
 import { LOGO_BOTTOM, LOGO_TOP, SIGNATURE } from './assets.ts'
+import { DEFAULT_SETTINGS, FONT_SIZE_PT, mergeSettings } from './settings.ts'
+import type { DocumentSettings } from './settings.ts'
 
 export const BRAND = '#C6355C'
 
@@ -148,8 +150,23 @@ const listBlock = (title: string, lines: string[]) =>
 
 /* ---------- เอกสาร ---------- */
 
-export function renderQuotationHtml(d: QuoteData, opts: { autoPrint?: boolean } = {}): string {
+export function renderQuotationHtml(
+  d: QuoteData,
+  opts: { autoPrint?: boolean; settings?: unknown } = {},
+): string {
+  const st: DocumentSettings = opts.settings ? mergeSettings(opts.settings) : DEFAULT_SETTINGS
+  const g = st.design
   const afterDiscount = Number(d.subtotal || 0) - Number(d.discount_amount || 0)
+
+  // ขาว-ดำใช้สีเดียวแทนสีแบรนด์ทั้งหมด ไม่ใช่แค่ไม่พิมพ์สี
+  // เพราะเครื่องขาวดำจะแปลงสีแบรนด์เป็นเทาอ่อนจนอ่านไม่ออก
+  const brand = g.mono ? '#000' : BRAND
+  const headBg = g.show_table_header_bg ? brand : 'transparent'
+  const headFg = g.show_table_header_bg ? '#fff' : '#000'
+  const headRule = g.show_table_header_bg ? 'none' : '.3mm solid #000'
+
+  const title = st.titles.quotation || { th: 'ใบเสนอราคา', en: '' }
+  const inclusive = st.price_mode === 'inclusive'
 
   const autoPrint = opts.autoPrint
     ? '<script>window.addEventListener("load",function(){setTimeout(function(){window.print()},400)})</script>'
@@ -159,26 +176,32 @@ export function renderQuotationHtml(d: QuoteData, opts: { autoPrint?: boolean } 
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<title>${esc(d.doc_no || 'ใบเสนอราคา')}</title>
+<title>${esc(d.doc_no || title.th)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
-  /* ฟอนต์ต้นฉบับคือ CS ChatThai (ไม่มีหัว) ถ้าเครื่องมีจะถูกใช้ก่อน
-     ถ้าไม่มีจะถอยไป Sarabun ซึ่งเป็นไทยไม่มีหัวเหมือนกัน */
-  :root { --brand: ${BRAND}; }
+  /* ต้นฉบับใช้ CS ChatThai (ไทยไม่มีหัว) ถ้าเครื่องที่เปิดมีฟอนต์ลงไว้จะถูกใช้ก่อน
+     ถ้าไม่มีจะถอยไป Sarabun ซึ่งเป็นไทยไม่มีหัวเหมือนกัน
 
-  @page { size: A4 portrait; margin: 0; }
+     ข้อจำกัดที่ยังแก้ไม่ได้: เซิร์ฟเวอร์ที่เรนเดอร์ PDF ไม่มีฟอนต์ลงไว้
+     จึงได้ Sarabun ความกว้างตัวอักษรต่างจากต้นฉบับ จุดตัดบรรทัดเลื่อน
+     การฝังฟอนต์แก้เรื่องนี้ได้ แต่ต้องหาที่เก็บไฟล์ฟอนต์ที่ไม่ใช่ repo สาธารณะก่อน */
+
+  :root { --brand: ${brand}; }
+
+  @page { size: ${g.paper === 'continuous' ? 'auto' : 'A4 portrait'}; margin: 0; }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
-    font-family: 'CS ChatThai', 'CSChatThai', 'Sarabun', 'Noto Sans Thai', Tahoma, sans-serif;
-    font-size: 10.5pt; line-height: 1.4; color: #000; background: #eceff1;
+    font-family: 'CS ChatThai', 'Sarabun', 'Noto Sans Thai', Tahoma, sans-serif;
+    font-size: ${FONT_SIZE_PT[g.font_size]}pt; line-height: 1.4; color: #000; background: #eceff1;
     -webkit-print-color-adjust: exact; print-color-adjust: exact;
   }
   .sheet {
-    /* 296mm ไม่ใช่ 297mm เพื่อกันการปัดเศษที่ทำให้ Chrome แถมหน้าเปล่า */
-    position: relative; width: 210mm; min-height: 296mm; margin: 0 auto;
+    /* 296mm ไม่ใช่ 297mm เพื่อกันการปัดเศษที่ทำให้ Chrome แถมหน้าเปล่า
+       กระดาษต่อเนื่องไม่กำหนดความสูง ให้ยืดตามจำนวนรายการ */
+    position: relative; width: 210mm; min-height: ${g.paper === 'continuous' ? 'auto' : '296mm'}; margin: 0 auto;
     padding: 12.5mm; background: #fff; overflow: hidden;
     display: flex; flex-direction: column;
   }
@@ -200,6 +223,8 @@ export function renderQuotationHtml(d: QuoteData, opts: { autoPrint?: boolean } 
   .head img { width: 49mm; }
   .title-wrap { padding-top: 3mm; width: 78mm; }
   .title { color: var(--brand); font-size: 21pt; text-align: right; line-height: 1.1; }
+  .title-en { color: var(--brand); font-size: 12pt; text-align: right; line-height: 1.2; }
+  .copy-mark { text-align: right; line-height: 1.2; }
   .title-rule { border-bottom: .35mm solid var(--brand); margin-top: 2.5mm; }
 
   /* บริษัท + ข้อมูลเอกสาร */
@@ -218,7 +243,8 @@ export function renderQuotationHtml(d: QuoteData, opts: { autoPrint?: boolean } 
   table.items { width: 100%; border-collapse: collapse; margin-top: 6mm; }
   table.items thead { display: table-header-group; }
   table.items th {
-    background: var(--brand); color: #fff; font-weight: normal;
+    background: ${headBg}; color: ${headFg}; font-weight: normal;
+    border-bottom: ${headRule};
     padding: 1.6mm 2.5mm; text-align: center; white-space: nowrap;
   }
   table.items th.a-desc { text-align: center; }
@@ -272,9 +298,11 @@ export function renderQuotationHtml(d: QuoteData, opts: { autoPrint?: boolean } 
   <div class="corner"></div>
 
   <div class="head">
-    <img src="${LOGO_TOP}" alt="">
+    ${g.show_logo ? `<img src="${LOGO_TOP}" alt="">` : '<div></div>'}
     <div class="title-wrap">
-      <div class="title">ใบเสนอราคา</div>
+      <div class="title">${esc(title.th)}</div>
+      ${st.bilingual_title && title.en ? `<div class="title-en">${esc(title.en)}</div>` : ''}
+      ${g.show_copy_mark ? '<div class="copy-mark">ต้นฉบับ</div>' : ''}
       <div class="title-rule"></div>
     </div>
   </div>
@@ -306,8 +334,8 @@ export function renderQuotationHtml(d: QuoteData, opts: { autoPrint?: boolean } 
         <th>#</th>
         <th class="a-desc">รายละเอียด</th>
         <th>จำนวน</th>
-        <th class="a-right">ราคาต่อหน่วย</th>
-        <th class="a-right">ยอดรวม</th>
+        <th class="a-right">ราคาต่อหน่วย${inclusive ? ' (รวมภาษี)' : ''}</th>
+        <th class="a-right">ยอดรวม${inclusive ? ' (รวมภาษี)' : ''}</th>
       </tr>
     </thead>
     <tbody>
@@ -338,7 +366,7 @@ export function renderQuotationHtml(d: QuoteData, opts: { autoPrint?: boolean } 
       <div>ในนาม ${esc(COMPANY.nameShort)}</div>
     </div>
     <div class="foot-mid">
-      <img class="mark" src="${LOGO_BOTTOM}" alt="">
+      ${g.show_stamp ? `<img class="mark" src="${LOGO_BOTTOM}" alt="">` : ''}
       ${COMPANY.autoSign ? `<img class="sign" src="${SIGNATURE}" alt="">` : ''}
       ${COMPANY.autoSign ? `<div class="signdate">${esc(formatDMY(d.issue_date))}</div>` : ''}
     </div>

@@ -1,0 +1,205 @@
+/*
+ * สไตล์กลางของหน้าจอหลังบ้าน
+ *
+ * ถอดออกมาจากหน้าสร้างใบเสนอราคา เพื่อให้หน้าอื่น (ใบแจ้งหนี้ ใบเสร็จ
+ * ใบกำกับภาษี หน้าตั้งค่า) ใช้ชุดเดียวกัน แล้วปรับสีหรือระยะที่นี่ทีเดียว
+ * แทนที่จะไปตามแก้ทุกหน้า
+ *
+ * ตัวอักษร: ต้นฉบับเอกสารใช้ CS ChatThai ถ้าเครื่องที่เปิดมีลงไว้จะถูกใช้ก่อน
+ * ถ้าไม่มีถอยไป Sarabun ยังไม่ฝังไฟล์ฟอนต์ไว้ในรีโป เพราะรีโปนี้เป็น public
+ * การ commit ไฟล์ฟอนต์ลงไปเท่ากับเผยแพร่ต่อ ซึ่งอาจขัดสัญญาอนุญาต
+ */
+
+* { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: 'CS ChatThai', 'Sarabun', 'Noto Sans Thai', sans-serif; font-size: 15.5px;
+  }
+  .wrap { max-width: 1220px; margin: 0 auto; padding: 18px 18px 60px; }
+
+  /* ---- แถบหัว ---- */
+  .topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+  .idline { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .kicker { font-size: 14px; color: var(--muted); display: flex; align-items: center; gap: 6px; width: 100%; }
+  .docno {
+    font: inherit; font-size: 26px; font-weight: 700; color: var(--accent);
+    border: 1px solid transparent; background: transparent; padding: 2px 6px;
+    border-radius: 6px; width: 15ch;
+  }
+  .docno:hover, .docno:focus { border-color: var(--line); background: #fff; outline: none; }
+  .iconbtn {
+    border: 1px solid transparent; background: transparent; color: var(--muted);
+    padding: 5px 7px; border-radius: 6px; cursor: pointer; font-size: 15px; line-height: 1;
+  }
+  .iconbtn:hover { background: #e9edf2; color: var(--ink); }
+  .chip {
+    background: #fde8ef; color: var(--brand); border-radius: 999px;
+    padding: 4px 14px; font-size: 13px; white-space: nowrap;
+  }
+  button {
+    font: inherit; padding: 9px 18px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--line); background: #fff; color: var(--ink);
+  }
+  button:hover { border-color: #b9c2cc; }
+  button.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+  button.primary:hover { filter: brightness(1.07); }
+  button.ghost { background: transparent; }
+
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+
+  /* ---- แถบเครื่องมือไอคอนในการ์ด ---- */
+  .toolrow { display: flex; justify-content: flex-end; gap: 4px; margin-bottom: 6px; flex-wrap: wrap; }
+  .tool {
+    border: none; background: transparent; color: var(--muted); cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 6px 12px; border-radius: 8px; font-size: 12px; min-width: 62px;
+  }
+  .tool:hover { background: #eef2f6; color: var(--ink); }
+  .tool .ic { font-size: 20px; line-height: 1; }
+
+  .grid { display: grid; gap: 14px 24px; }
+  .cols-2 { grid-template-columns: 1fr 1fr; }
+  .cols-3 { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 900px) { .cols-2, .cols-3 { grid-template-columns: 1fr; } }
+
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 5px; }
+  input[type=text], input[type=date], input[type=number], textarea, select {
+    font: inherit; width: 100%; padding: 8px 10px; border: 1px solid var(--line);
+    border-radius: 8px; background: #fff; color: inherit;
+  }
+  input:focus, textarea:focus, select:focus { outline: 2px solid rgba(198,53,92,.22); border-color: var(--brand); }
+  input[readonly] { background: #f7f9fb; color: var(--muted); }
+  textarea { resize: vertical; }
+  .field + .field { margin-top: 12px; }
+  h2 { font-size: 15px; margin: 0 0 14px; color: var(--brand); }
+
+  /* ---- ยอดรวมตัวใหญ่ ---- */
+  .grandbox { text-align: right; }
+  .grandbox .lbl { font-size: 14px; color: var(--muted); }
+  .grandbox .val { font-size: 34px; font-weight: 700; color: var(--accent); line-height: 1.15; }
+  .inline { display: flex; align-items: center; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+  .inline label { margin: 0; white-space: nowrap; }
+  .inline input, .inline select { width: 190px; }
+
+  /* ---- ตารางรายการ ---- */
+  table.lines { width: 100%; border-collapse: collapse; }
+  table.lines thead th {
+    background: var(--head); color: #fff; font-size: 13px; font-weight: 600;
+    padding: 9px 8px; text-align: left; white-space: nowrap;
+  }
+  table.lines thead th:first-child { border-radius: 8px 0 0 0; }
+  table.lines thead th:last-child { border-radius: 0 8px 0 0; }
+  table.lines th.r { text-align: right; }
+  table.lines td { padding: 10px 8px; vertical-align: top; border-bottom: 1px solid var(--line); }
+  table.lines td.idx { color: var(--muted); padding-top: 18px; text-align: center; }
+  table.lines td.r { text-align: right; }
+  input.w-qty { width: 92px; } input.w-unit { width: 96px; } input.w-price { width: 130px; }
+  table.lines td:nth-child(1), table.lines th:nth-child(1) { width: 56px; }
+  table.lines td:nth-child(3), table.lines th:nth-child(3) { width: 108px; }
+  table.lines td:nth-child(4), table.lines th:nth-child(4) { width: 112px; }
+  table.lines td:nth-child(5), table.lines th:nth-child(5) { width: 146px; }
+  table.lines td:nth-child(6), table.lines th:nth-child(6) { width: 116px; }
+  table.lines td:nth-child(7), table.lines th:nth-child(7) { width: 40px; }
+  .amt { padding-top: 18px; white-space: nowrap; }
+  .del { border: none; background: transparent; color: var(--muted); font-size: 20px; line-height: 1; padding: 6px 8px; cursor: pointer; }
+  .del:hover { color: var(--brand); }
+
+  /* ---- สรุปยอด ---- */
+  .totals { margin-left: auto; width: 400px; max-width: 100%; }
+  .trow { display: flex; align-items: center; gap: 10px; padding: 5px 0; }
+  .trow .k { flex: 1; text-align: right; color: var(--muted); }
+  .trow .k.brand { color: var(--brand); }
+  .trow .pc { width: 74px; }
+  .trow .v { width: 130px; text-align: right; font-variant-numeric: tabular-nums; }
+  .trow.grand { border-top: 1px solid var(--line); margin-top: 6px; padding-top: 10px; font-weight: 700; font-size: 17px; }
+  .trow.grand .v { color: var(--brand); }
+  .bahttext { text-align: right; color: var(--muted); font-size: 13px; margin-top: 6px; }
+
+  /* ---- ตัวอย่างเอกสาร ---- */
+  .overlay { position: fixed; inset: 0; background: rgba(20,25,32,.55); display: none; flex-direction: column; z-index: 50; }
+  .overlay.open { display: flex; }
+  .ovbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 18px; background: #fff; border-bottom: 1px solid var(--line); }
+  .ovbar .t { font-weight: 700; color: var(--brand); }
+  .overlay iframe { flex: 1; width: 100%; border: 0; background: #eceff1; }
+  .hint { font-size: 13px; color: var(--muted); }
+  .err { color: #b3261e; font-size: 14px; padding: 10px 18px; background: #fdeceb; display: none; }
+
+/* ---- หน้าตั้งค่า ---- */
+/* ใช้ร่วมกันได้กับหน้าตั้งค่าอื่นที่จะทำต่อ (ตั้งค่าบัญชี ตั้งค่าผู้ใช้งาน) */
+
+.settings { display: grid; grid-template-columns: 232px 1fr; gap: 20px; align-items: start; }
+@media (max-width: 860px) { .settings { grid-template-columns: 1fr; } }
+
+.sidenav { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 10px; position: sticky; top: 18px; }
+.sidenav .group { font-size: 13px; color: var(--muted); padding: 10px 12px 6px; }
+.sidenav a {
+  display: block; padding: 9px 12px; border-radius: 8px; color: var(--ink);
+  text-decoration: none; font-size: 14.5px;
+}
+.sidenav a:hover { background: #eef2f6; }
+.sidenav a.on { background: #fde8ef; color: var(--brand); }
+
+/* แถวตั้งค่า: ชื่อ + คำอธิบาย ด้านซ้าย ตัวควบคุมด้านขวา */
+.srow {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 20px;
+  padding: 16px 0; border-bottom: 1px solid var(--line);
+}
+.srow:last-child { border-bottom: 0; }
+.srow .txt { flex: 1; min-width: 0; }
+.srow .name { font-size: 15px; }
+.srow .desc { font-size: 13px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+.srow .ctl { flex: none; }
+.srow .ctl select { width: 190px; }
+
+/* กรอบย่อยสำหรับกลุ่มที่มีหลายบรรทัด เช่น เอกสารขาย / เอกสารซื้อ */
+.subbox { background: #f7f9fb; border-radius: 10px; padding: 6px 16px; margin-top: 12px; }
+.subbox .cap { font-size: 14px; padding: 10px 0 2px; }
+.subbox .srow { padding: 9px 0; border-bottom: 0; }
+.subbox .srow .name { font-size: 14.5px; color: var(--muted); }
+
+/* สวิตช์เปิด/ปิด */
+.sw { position: relative; display: inline-block; width: 46px; height: 26px; flex: none; }
+.sw input { position: absolute; opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.sw .track {
+  position: absolute; inset: 0; background: #c7d0da; border-radius: 999px;
+  transition: background .15s; pointer-events: none;
+}
+.sw .track::after {
+  content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px;
+  background: #fff; border-radius: 50%; transition: transform .15s;
+}
+.sw input:checked + .track { background: var(--accent); }
+.sw input:checked + .track::after { transform: translateX(20px); }
+.sw input:focus-visible + .track { outline: 2px solid rgba(198,53,92,.35); outline-offset: 2px; }
+
+/* กลุ่มตัวเลือกแบบวงกลม เรียงแนวนอนแล้วตกบรรทัดเองเมื่อจอแคบ */
+.radios { display: flex; gap: 22px; flex-wrap: wrap; align-items: center; }
+.radios label { display: flex; align-items: center; gap: 7px; margin: 0; font-size: 14.5px; color: var(--ink); cursor: pointer; }
+.radios input { width: auto; margin: 0; accent-color: var(--brand); }
+.radios .eg { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* ตารางเลขรันเอกสาร */
+table.runno { width: 100%; border-collapse: collapse; }
+table.runno td { padding: 7px 6px; vertical-align: middle; }
+table.runno td.lbl { width: 200px; color: var(--ink); font-size: 14.5px; }
+/* คำนำหน้ากับเลขถัดไปบีบให้พอดีตัว แล้วให้คอลัมน์ตัวอย่างกินที่เหลือ
+   ไม่งั้นตารางจะกระจายช่องจนคำนำหน้ากับเลขอยู่ห่างกันคนละมุม */
+table.runno td:nth-child(2), table.runno td:nth-child(3) { width: 1%; white-space: nowrap; }
+table.runno input.pfx { width: 84px; text-transform: uppercase; }
+table.runno input.seq { width: 96px; }
+table.runno td.eg { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; font-size: 14px; }
+table.runno.titles td:nth-child(2), table.runno.titles td:nth-child(3) { width: 38%; }
+table.runno.titles input { width: 100%; }
+
+@media (max-width: 700px) {
+  table.runno td.lbl { width: auto; }
+  table.runno td.eg { display: none; }
+}
+
+/* แถบบันทึกค้างท้ายจอ ให้กดบันทึกได้โดยไม่ต้องเลื่อนขึ้น */
+.savebar {
+  position: sticky; bottom: 0; display: flex; justify-content: flex-end; gap: 10px;
+  padding: 12px 0; background: linear-gradient(to top, var(--bg) 65%, transparent);
+}
+.saved { align-self: center; color: #1e7d43; font-size: 14px; display: none; }
+.saved.on { display: block; }

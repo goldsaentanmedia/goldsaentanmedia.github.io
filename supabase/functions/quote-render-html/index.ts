@@ -86,6 +86,26 @@ function toQuoteData(src: Record<string, unknown>): QuoteData {
   }
 }
 
+const admin = () =>
+  createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
+
+/**
+ * อ่านตั้งค่าเอกสารที่บันทึกไว้
+ *
+ * ถ้ายังไม่มีแถวตั้งค่า หรืออ่านไม่ได้ ให้เรนเดอร์ด้วยค่าเริ่มต้นต่อไป
+ * เอกสารต้องออกได้เสมอ การตั้งค่าที่หายไปไม่ควรทำให้พิมพ์ใบเสนอราคาไม่ได้
+ */
+async function loadSettings(
+  supabase: ReturnType<typeof admin>,
+): Promise<unknown> {
+  const { data } = await supabase
+    .from('document_settings')
+    .select('settings')
+    .eq('id', 1)
+    .maybeSingle()
+  return data?.settings ?? null
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
 
@@ -93,25 +113,32 @@ Deno.serve(async (req) => {
     const url = new URL(req.url)
     const autoPrint = url.searchParams.get('print') === '1'
 
-    if (url.searchParams.get('preview') === '1') {
-      return html(renderQuotationHtml(SAMPLE, { autoPrint }))
-    }
-
-    // รับ id ได้ทั้งจาก query string (เปิดในแท็บใหม่) และ JSON body (fetch)
-    // ถ้าส่ง data มาเต็มก้อน จะเรนเดอร์จากก้อนนั้นเลย ใช้ตอนกดดูตัวอย่างจากหน้าฟอร์ม
-    // ที่ยังไม่ได้บันทึกลงฐานข้อมูล
+    // ตั้งค่าที่ส่งมาพร้อมคำขอมีสิทธิ์เหนือที่บันทึกไว้ ใช้ตอนหน้าตั้งค่า
+    // ขอดูตัวอย่างของค่าที่กำลังปรับอยู่แต่ยังไม่ได้กดบันทึก
+    let inlineSettings: unknown = null
+    let data: Record<string, unknown> | null = null
     let id = url.searchParams.get('id') || ''
+
     if (req.method === 'POST') {
       const body = await req.json().catch(() => ({}))
-      if (body.data) return html(renderQuotationHtml(toQuoteData(body.data), { autoPrint }))
+      if (body.settings) inlineSettings = body.settings
+      if (body.data) data = body.data as Record<string, unknown>
       if (!id) id = String(body.id || '')
     }
+
+    const supabase = admin()
+    const settings = inlineSettings ?? (await loadSettings(supabase).catch(() => null))
+
+    if (url.searchParams.get('preview') === '1') {
+      return html(renderQuotationHtml(SAMPLE, { autoPrint, settings }))
+    }
+    // ถ้าส่ง data มาเต็มก้อน จะเรนเดอร์จากก้อนนั้นเลย ใช้ตอนกดดูตัวอย่างจากหน้าฟอร์ม
+    // ที่ยังไม่ได้บันทึกลงฐานข้อมูล
+    if (data) return html(renderQuotationHtml(toQuoteData(data), { autoPrint, settings }))
+
+    // รับ id ได้ทั้งจาก query string (เปิดในแท็บใหม่) และ JSON body (fetch)
     if (!id) return html('<p>missing id</p>', 400)
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-    )
     const { data: q, error } = await supabase
       .from('finance_documents')
       .select('*')
@@ -119,7 +146,7 @@ Deno.serve(async (req) => {
       .single()
     if (error || !q) return html('<p>quote not found</p>', 404)
 
-    return html(renderQuotationHtml(toQuoteData(q), { autoPrint }))
+    return html(renderQuotationHtml(toQuoteData(q), { autoPrint, settings }))
   } catch (e) {
     return html('<p>error: ' + String(e) + '</p>', 500)
   }

@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ตั้งค่าเอกสาร</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ui.css">
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="idline">
+      <span class="kicker">⚙️ การตั้งค่า</span>
+      <span style="font-size:26px;font-weight:700;color:var(--accent)">ตั้งค่าเอกสาร</span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="ghost" id="btn-preview">ดูตัวอย่างเอกสาร</button>
+    </div>
+  </div>
+
+  <div class="err" id="err"></div>
+
+  <div class="settings">
+    <nav class="sidenav">
+      <div class="group">ตั้งค่าเอกสาร</div>
+      <a href="#fn" class="on">ฟังก์ชั่นเอกสาร</a>
+      <a href="#runno">เลขรันเอกสาร</a>
+      <a href="#design">รูปแบบดีไซน์เอกสาร</a>
+      <a href="#titles">หัวเอกสาร</a>
+    </nav>
+
+    <div>
+      <!-- ---------------- ฟังก์ชั่นเอกสาร ---------------- -->
+      <div class="card" id="fn">
+        <h2>ฟังก์ชั่นเอกสาร</h2>
+
+        <div class="srow">
+          <div class="txt">
+            <div class="name">ตั้งค่าราคาที่แสดงในเอกสาร</div>
+            <div class="desc">แสดงราคาสินค้าหรือบริการในเอกสาร เป็นราคารวมภาษี หรือราคาไม่รวมภาษี</div>
+          </div>
+          <div class="ctl">
+            <select id="price_mode">
+              <option value="exclusive">ราคาไม่รวมภาษี</option>
+              <option value="inclusive">ราคารวมภาษี</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="srow" style="display:block">
+          <div class="txt">
+            <div class="name">ตั้งค่าภาษีมูลค่าเพิ่ม ส่วนลด และหัก ณ ที่จ่าย</div>
+            <div class="desc">
+              ตั้งค่ารูปแบบการคำนวณ เมื่อสินค้าและบริการแต่ละรายการมีภาษีมูลค่าเพิ่ม ส่วนลด
+              หรือภาษีหัก ณ ที่จ่าย ที่ไม่เท่ากัน
+            </div>
+          </div>
+
+          <div class="subbox">
+            <div class="cap">เอกสารขาย</div>
+            <div class="srow"><div class="txt"><div class="name">ภาษีมูลค่าเพิ่ม</div></div>
+              <div class="ctl"><select id="sales_vat"></select></div></div>
+            <div class="srow"><div class="txt"><div class="name">ส่วนลด</div></div>
+              <div class="ctl"><select id="sales_discount"></select></div></div>
+            <div class="srow"><div class="txt"><div class="name">หัก ณ ที่จ่าย</div></div>
+              <div class="ctl"><select id="sales_wht"></select></div></div>
+          </div>
+
+          <div class="subbox">
+            <div class="cap">เอกสารซื้อและค่าใช้จ่าย</div>
+            <div class="srow"><div class="txt"><div class="name">ภาษีมูลค่าเพิ่ม</div></div>
+              <div class="ctl"><select id="purchase_vat"></select></div></div>
+            <div class="srow"><div class="txt"><div class="name">ส่วนลด</div></div>
+              <div class="ctl"><select id="purchase_discount"></select></div></div>
+            <div class="srow"><div class="txt"><div class="name">หัก ณ ที่จ่าย</div></div>
+              <div class="ctl"><select id="purchase_wht"></select></div></div>
+          </div>
+        </div>
+
+        <div class="srow">
+          <div class="txt">
+            <div class="name">แสดงรายการปรับลดท้ายเอกสารใบเสร็จรับเงิน</div>
+            <div class="desc">แสดงรายการหักจากยอดจำนวนเงินรวมทั้งสิ้นท้ายใบเสร็จรับเงิน เพื่อให้ได้ยอดชำระที่เรียกเก็บเงินจริง</div>
+          </div>
+          <label class="sw"><input type="checkbox" id="show_receipt_adjustment"><span class="track"></span></label>
+        </div>
+
+        <div class="srow">
+          <div class="txt">
+            <div class="name">แสดงคลังสินค้าบนเอกสาร</div>
+            <div class="desc">เมื่อเปิดใช้งานจะแสดงคลังสินค้าที่หน้าเอกสาร และจะตัดหรือเพิ่มสต็อกจากคลังที่เลือก</div>
+          </div>
+          <label class="sw"><input type="checkbox" id="show_warehouse"><span class="track"></span></label>
+        </div>
+      </div>
+
+      <!-- ---------------- เลขรันเอกสาร ---------------- -->
+      <div class="card" id="runno">
+        <h2>เลขรันเอกสาร</h2>
+
+        <div class="srow" style="display:block">
+          <div class="txt">
+            <div class="name">รูปแบบการรันเลขเอกสาร</div>
+            <div class="desc">กำหนดว่าเลขลำดับจะเริ่มนับใหม่เมื่อไหร่ ตัวอย่างคิดจากวันนี้</div>
+          </div>
+          <div class="radios" id="fmt" style="margin-top:12px"></div>
+        </div>
+
+        <div class="srow" style="display:block">
+          <div class="txt">
+            <div class="name">ตั้งค่าเลขเริ่มต้นเอกสาร</div>
+            <div class="desc">
+              คำนำหน้าและเลขลำดับถัดไปของแต่ละประเภทเอกสาร เลขที่ออกไปแล้วจะไม่เปลี่ยนตาม
+              การแก้ที่นี่มีผลกับเอกสารที่ออกหลังจากนี้
+            </div>
+          </div>
+          <table class="runno" id="runno-table" style="margin-top:10px"></table>
+        </div>
+      </div>
+
+      <!-- ---------------- รูปแบบดีไซน์เอกสาร ---------------- -->
+      <div class="card" id="design">
+        <h2>รูปแบบดีไซน์เอกสาร</h2>
+
+        <div class="srow">
+          <div class="txt"><div class="name">ขนาดกระดาษ</div>
+            <div class="desc">กระดาษต่อเนื่องจะไม่บังคับความสูงหนึ่งหน้า เอกสารยืดตามจำนวนรายการ</div></div>
+          <div class="ctl radios">
+            <label><input type="radio" name="paper" value="a4">A4</label>
+            <label><input type="radio" name="paper" value="continuous">กระดาษต่อเนื่อง</label>
+          </div>
+        </div>
+
+        <div class="srow">
+          <div class="txt"><div class="name">ขนาดตัวอักษร</div>
+            <div class="desc">ขนาดกลางคือขนาดที่ใช้อยู่ในใบเสนอราคาปัจจุบัน</div></div>
+          <div class="ctl">
+            <select id="font_size">
+              <option value="small">เล็ก</option>
+              <option value="medium">กลาง (ค่าเริ่มต้น)</option>
+              <option value="large">ใหญ่</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="srow">
+          <div class="txt"><div class="name">เอกสารขาว-ดำ</div>
+            <div class="desc">เปลี่ยนสีแบรนด์ทั้งหมดเป็นสีดำ สำหรับพิมพ์ด้วยเครื่องขาวดำ ถ้าปล่อยเป็นสีจะออกมาเทาอ่อนจนอ่านยาก</div></div>
+          <label class="sw"><input type="checkbox" id="mono"><span class="track"></span></label>
+        </div>
+
+        <div class="srow">
+          <div class="txt"><div class="name">สัญลักษณ์ต้นฉบับ/สำเนา</div>
+            <div class="desc">พิมพ์คำว่า ต้นฉบับ ใต้ชื่อเอกสาร</div></div>
+          <label class="sw"><input type="checkbox" id="show_copy_mark"><span class="track"></span></label>
+        </div>
+
+        <div class="srow">
+          <div class="txt"><div class="name">พื้นหลังหัวตาราง</div>
+            <div class="desc">ปิดเพื่อประหยัดหมึก หัวตารางจะใช้เส้นคาดแทนพื้นสี</div></div>
+          <label class="sw"><input type="checkbox" id="show_table_header_bg"><span class="track"></span></label>
+        </div>
+
+        <div class="srow">
+          <div class="txt"><div class="name">โลโก้</div></div>
+          <label class="sw"><input type="checkbox" id="show_logo"><span class="track"></span></label>
+        </div>
+
+        <div class="srow">
+          <div class="txt"><div class="name">ตรายาง</div>
+            <div class="desc">ตราบริษัทที่ท้ายเอกสาร</div></div>
+          <label class="sw"><input type="checkbox" id="show_stamp"><span class="track"></span></label>
+        </div>
+      </div>
+
+      <!-- ---------------- หัวเอกสาร ---------------- -->
+      <div class="card" id="titles">
+        <h2>หัวเอกสาร</h2>
+
+        <div class="srow">
+          <div class="txt"><div class="name">พิมพ์ชื่อเอกสารสองภาษา</div>
+            <div class="desc">เพิ่มชื่ออังกฤษเป็นบรรทัดที่สองใต้ชื่อไทย ใช้กับลูกค้าต่างชาติ</div></div>
+          <label class="sw"><input type="checkbox" id="bilingual_title"><span class="track"></span></label>
+        </div>
+
+        <div class="srow" style="display:block">
+          <div class="txt">
+            <div class="name">ชื่อที่พิมพ์บนเอกสารแต่ละประเภท</div>
+            <div class="desc">ชื่อภาษาอังกฤษจะถูกพิมพ์เมื่อเปิดสองภาษาไว้เท่านั้น</div>
+          </div>
+          <table class="runno titles" id="titles-table" style="margin-top:10px"></table>
+        </div>
+      </div>
+
+      <div class="savebar">
+        <span class="saved" id="saved">บันทึกแล้ว</span>
+        <button class="ghost" id="btn-reset">คืนค่าเริ่มต้น</button>
+        <button class="primary" id="btn-save">บันทึกข้อมูล</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="ov">
+  <div class="ovbar">
+    <span class="t">ตัวอย่างเอกสารตามค่าที่ตั้งไว้</span>
+    <span class="hint">ยังไม่ได้บันทึก — ปิดหน้าต่างนี้แล้วกดบันทึกข้อมูลถ้าพอใจ</span>
+    <button class="ghost" id="ov-close">ปิด</button>
+  </div>
+  <iframe id="ov-frame" title="ตัวอย่างเอกสาร"></iframe>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://wkvrgjnbpifktebdsytb.supabase.co'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrdnJnam5icGlma3RlYmRzeXRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwMTI3NDgsImV4cCI6MjA5NjU4ODc0OH0.kKfy0vTJEon2JpfhFZ1D04rRhnBy6cdMNRkPd3EqfbQ'
+const RENDER_URL = SUPABASE_URL + '/functions/v1/quote-render-html'
+const REST = SUPABASE_URL + '/rest/v1/document_settings'
+
+/* ประเภทเอกสารที่มีเลขรันของตัวเอง เรียงตามที่แสดงในหน้าตั้งค่า
+   ต้องตรงกับ DOC_TYPES ใน supabase/functions/quote-render-html/settings.ts */
+const DOC_TYPES = [
+  ['quotation', 'ใบเสนอราคา', 'QT'],
+  ['billing_note', 'ใบวางบิล/ใบแจ้งหนี้', 'BL'],
+  ['tax_invoice', 'ใบกำกับภาษี/ใบเสร็จ', 'INV'],
+  ['cash_invoice', 'เงินสด', 'CA'],
+  ['receipt', 'ใบเสร็จรับเงิน', 'RE'],
+  ['credit_note', 'ใบลดหนี้', 'CN'],
+  ['debit_note', 'ใบเพิ่มหนี้', 'DN'],
+  ['purchase_order', 'ใบสั่งซื้อ', 'PO'],
+  ['receiving', 'ใบรับสินค้า', 'RI'],
+]
+
+const DEFAULT_TITLES = {
+  quotation: { th: 'ใบเสนอราคา', en: 'Price Quotation' },
+  billing_note: { th: 'ใบวางบิล/ใบแจ้งหนี้', en: 'Billing Note/Invoice' },
+  tax_invoice: { th: 'ใบกำกับภาษี/ใบเสร็จรับเงิน', en: 'Tax Invoice/Receipt' },
+  cash_invoice: { th: 'ใบกำกับภาษี/ใบเสร็จรับเงิน (เงินสด)', en: 'Tax Invoice/Receipt (Cash)' },
+  receipt: { th: 'ใบเสร็จรับเงิน', en: 'Receipt' },
+  credit_note: { th: 'ใบลดหนี้', en: 'Credit Note' },
+  debit_note: { th: 'ใบเพิ่มหนี้', en: 'Debit Note' },
+  purchase_order: { th: 'ใบสั่งซื้อ', en: 'Purchase Order' },
+  receiving: { th: 'ใบรับสินค้า', en: 'Receiving' },
+}
+
+const DEFAULTS = {
+  price_mode: 'exclusive',
+  sales: { vat: 'document_end', discount: 'document_end', wht: 'document_end' },
+  purchase: { vat: 'document_end', discount: 'document_end', wht: 'document_end' },
+  show_receipt_adjustment: true,
+  show_warehouse: true,
+  running_format: 'ym',
+  running: Object.fromEntries(DOC_TYPES.map(([k, , p]) => [k, { prefix: p, next: 1 }])),
+  design: {
+    paper: 'a4', mono: false, font_size: 'medium', show_copy_mark: true,
+    show_table_header_bg: true, show_logo: true, show_stamp: true,
+  },
+  titles: DEFAULT_TITLES,
+  bilingual_title: false,
+}
+
+/* ---------- เลขที่เอกสาร ----------
+   ต้องให้ผลตรงกับ runningPeriod()/runningWidth() ใน settings.ts และ
+   running_period()/running_width() ใน migration 0002 มีเทสต์ที่ผูกทั้งสามฝั่ง
+   ไว้กับสตริงชุดเดียวกัน ถ้าแก้ที่นี่ต้องแก้อีกสองที่ด้วย */
+const pad2 = (n) => String(n).padStart(2, '0')
+function runningPeriod(fmt, on) {
+  const y = on.getFullYear(), m = pad2(on.getMonth() + 1), d = pad2(on.getDate())
+  if (fmt === 'ymd') return `${y}${m}${d}`
+  if (fmt === 'ym') return `${y}${m}`
+  if (fmt === 'year') return String(y)
+  return ''
+}
+const runningWidth = (fmt) => (fmt === 'ymd' || fmt === 'ym' ? 4 : 6)
+const formatDocNo = (prefix, fmt, seq, on) =>
+  prefix + runningPeriod(fmt, on) + String(seq).padStart(runningWidth(fmt), '0')
+
+const FORMATS = [
+  ['plain', 'เลขเริ่มต้น'],
+  ['ymd', 'ปี/เดือน/วัน'],
+  ['ym', 'ปี/เดือน'],
+  ['year', 'ปี'],
+]
+
+const POSITIONS = [
+  ['document_end', 'ท้ายเอกสาร'],
+  ['line_item', 'แยกรายบรรทัด'],
+]
+
+/* ---------- ตัวช่วย ---------- */
+const $ = (id) => document.getElementById(id)
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+
+function showErr(msg) {
+  const el = $('err')
+  el.textContent = msg
+  el.style.display = msg ? 'block' : 'none'
+}
+
+/** สำเนาลึกแบบง่าย พอสำหรับตั้งค่าที่เป็น JSON ล้วน ไม่มี Date หรือ Map */
+const clone = (o) => JSON.parse(JSON.stringify(o))
+
+/** ถมคีย์ที่ขาดทีละชั้น ให้ผลตรงกับ mergeSettings() ใน settings.ts */
+function merge(stored) {
+  const s = stored || {}, d = DEFAULTS
+  return {
+    price_mode: s.price_mode ?? d.price_mode,
+    sales: { ...d.sales, ...(s.sales || {}) },
+    purchase: { ...d.purchase, ...(s.purchase || {}) },
+    show_receipt_adjustment: s.show_receipt_adjustment ?? d.show_receipt_adjustment,
+    show_warehouse: s.show_warehouse ?? d.show_warehouse,
+    running_format: s.running_format ?? d.running_format,
+    running: { ...clone(d.running), ...(s.running || {}) },
+    design: { ...d.design, ...(s.design || {}) },
+    titles: { ...clone(d.titles), ...(s.titles || {}) },
+    bilingual_title: s.bilingual_title ?? d.bilingual_title,
+  }
+}
+
+let state = clone(DEFAULTS)
+
+/* ---------- สร้างส่วนที่ต้องวนสร้าง ---------- */
+
+function buildSelects() {
+  for (const side of ['sales', 'purchase']) {
+    for (const key of ['vat', 'discount', 'wht']) {
+      $(side + '_' + key).innerHTML = POSITIONS
+        .map(([v, l]) => `<option value="${v}">${l}</option>`).join('')
+    }
+  }
+}
+
+function buildFormats() {
+  const now = new Date()
+  $('fmt').innerHTML = FORMATS.map(([v, label]) => `
+    <label>
+      <input type="radio" name="running_format" value="${v}">
+      ${label} <span class="eg">${formatDocNo('INV', v, 1, now)}</span>
+    </label>`).join('')
+}
+
+function buildRunno() {
+  $('runno-table').innerHTML = DOC_TYPES.map(([key, label]) => `
+    <tr>
+      <td class="lbl">${label}:</td>
+      <td><input class="pfx" data-run="${key}" data-k="prefix" maxlength="6" aria-label="คำนำหน้า ${label}"></td>
+      <td><input class="seq" type="number" min="1" data-run="${key}" data-k="next" aria-label="เลขถัดไป ${label}"></td>
+      <td class="eg" id="eg-${key}"></td>
+    </tr>`).join('')
+}
+
+function buildTitles() {
+  $('titles-table').innerHTML = DOC_TYPES.map(([key, label]) => `
+    <tr>
+      <td class="lbl">${label}:</td>
+      <td><input data-title="${key}" data-lang="th" aria-label="ชื่อไทย ${label}"></td>
+      <td><input data-title="${key}" data-lang="en" aria-label="ชื่ออังกฤษ ${label}"></td>
+    </tr>`).join('')
+}
+
+/* ---------- ย้ายค่าเข้า/ออกจากหน้าจอ ---------- */
+
+function toForm() {
+  $('price_mode').value = state.price_mode
+  for (const side of ['sales', 'purchase'])
+    for (const key of ['vat', 'discount', 'wht']) $(side + '_' + key).value = state[side][key]
+
+  $('show_receipt_adjustment').checked = !!state.show_receipt_adjustment
+  $('show_warehouse').checked = !!state.show_warehouse
+  $('bilingual_title').checked = !!state.bilingual_title
+
+  const fmt = document.querySelector(`input[name=running_format][value="${state.running_format}"]`)
+  if (fmt) fmt.checked = true
+
+  const paper = document.querySelector(`input[name=paper][value="${state.design.paper}"]`)
+  if (paper) paper.checked = true
+
+  $('font_size').value = state.design.font_size
+  for (const k of ['mono', 'show_copy_mark', 'show_table_header_bg', 'show_logo', 'show_stamp'])
+    $(k).checked = !!state.design[k]
+
+  for (const el of document.querySelectorAll('[data-run]')) {
+    const cfg = state.running[el.dataset.run] || { prefix: '', next: 1 }
+    el.value = cfg[el.dataset.k] ?? ''
+  }
+  for (const el of document.querySelectorAll('[data-title]')) {
+    const t = state.titles[el.dataset.title] || { th: '', en: '' }
+    el.value = t[el.dataset.lang] ?? ''
+  }
+  refreshExamples()
+}
+
+function fromForm() {
+  state.price_mode = $('price_mode').value
+  for (const side of ['sales', 'purchase'])
+    for (const key of ['vat', 'discount', 'wht']) state[side][key] = $(side + '_' + key).value
+
+  state.show_receipt_adjustment = $('show_receipt_adjustment').checked
+  state.show_warehouse = $('show_warehouse').checked
+  state.bilingual_title = $('bilingual_title').checked
+
+  const fmt = document.querySelector('input[name=running_format]:checked')
+  if (fmt) state.running_format = fmt.value
+  const paper = document.querySelector('input[name=paper]:checked')
+  if (paper) state.design.paper = paper.value
+
+  state.design.font_size = $('font_size').value
+  for (const k of ['mono', 'show_copy_mark', 'show_table_header_bg', 'show_logo', 'show_stamp'])
+    state.design[k] = $(k).checked
+
+  for (const el of document.querySelectorAll('[data-run]')) {
+    const key = el.dataset.run
+    state.running[key] = state.running[key] || { prefix: '', next: 1 }
+    if (el.dataset.k === 'prefix') state.running[key].prefix = el.value.trim().toUpperCase()
+    // เลขถัดไปต้องเป็นจำนวนเต็มตั้งแต่ 1 ถ้าเว้นว่างหรือใส่ 0 จะกลายเป็นเลขที่ไม่มีอยู่จริง
+    else state.running[key].next = Math.max(1, parseInt(el.value, 10) || 1)
+  }
+  for (const el of document.querySelectorAll('[data-title]')) {
+    const key = el.dataset.title
+    state.titles[key] = state.titles[key] || { th: '', en: '' }
+    state.titles[key][el.dataset.lang] = el.value
+  }
+}
+
+/** อัปเดตตัวอย่างเลขที่เอกสารให้ตรงกับที่กรอกอยู่ ไม่ต้องกดบันทึกก่อน */
+function refreshExamples() {
+  const now = new Date()
+  const fmt = (document.querySelector('input[name=running_format]:checked') || {}).value || 'ym'
+  for (const [key] of DOC_TYPES) {
+    const cfg = state.running[key] || { prefix: '', next: 1 }
+    const cell = $('eg-' + key)
+    if (cell) cell.textContent = formatDocNo(cfg.prefix || '', fmt, cfg.next || 1, now)
+  }
+}
+
+/* ---------- อ่าน/เขียนฐานข้อมูล ---------- */
+
+const authHeaders = () => {
+  const token = sessionStorage.getItem('sb_access_token') || SUPABASE_ANON_KEY
+  return { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }
+}
+
+async function load() {
+  showErr('')
+  try {
+    const res = await fetch(REST + '?id=eq.1&select=settings', { headers: authHeaders() })
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + (await res.text()).slice(0, 200))
+    const rows = await res.json()
+    state = merge(rows[0] && rows[0].settings)
+  } catch (e) {
+    // อ่านไม่ได้ให้ใช้ค่าเริ่มต้นไปก่อน หน้าตั้งค่าต้องเปิดดูได้แม้ยังไม่ได้ล็อกอิน
+    state = clone(DEFAULTS)
+    showErr('อ่านค่าที่บันทึกไว้ไม่ได้ กำลังแสดงค่าเริ่มต้น — ' + e.message)
+  }
+  toForm()
+}
+
+async function save() {
+  fromForm()
+  showErr('')
+  $('saved').classList.remove('on')
+  const btn = $('btn-save')
+  btn.disabled = true
+  try {
+    const res = await fetch(REST + '?id=eq.1', {
+      method: 'PATCH',
+      headers: { ...authHeaders(), Prefer: 'return=representation' },
+      body: JSON.stringify({ settings: state }),
+    })
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + (await res.text()).slice(0, 300))
+    const rows = await res.json()
+    if (!rows.length) throw new Error('ไม่มีแถวตั้งค่าให้แก้ ต้องรัน migration 0002 ก่อน')
+    $('saved').classList.add('on')
+    setTimeout(() => $('saved').classList.remove('on'), 2500)
+  } catch (e) {
+    showErr('บันทึกไม่สำเร็จ — ' + e.message)
+  } finally {
+    btn.disabled = false
+  }
+}
+
+/** ดูตัวอย่างโดยส่งค่าที่กำลังปรับไปให้ตัวเรนเดอร์ ยังไม่บันทึกลงฐานข้อมูล */
+async function preview() {
+  fromForm()
+  showErr('')
+  try {
+    const res = await fetch(RENDER_URL + '?preview=1', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + SUPABASE_ANON_KEY },
+      body: JSON.stringify({ settings: state }),
+    })
+    if (!res.ok) throw new Error('HTTP ' + res.status)
+    const doc = await res.text()
+    $('ov-frame').srcdoc = doc
+    $('ov').classList.add('open')
+  } catch (e) {
+    showErr('เปิดตัวอย่างไม่ได้ — ' + e.message)
+  }
+}
+
+/* ---------- ต่อเหตุการณ์ ---------- */
+
+buildSelects(); buildFormats(); buildRunno(); buildTitles()
+
+// พิมพ์คำนำหน้าหรือเปลี่ยนรูปแบบแล้วตัวอย่างต้องขยับทันที
+document.addEventListener('input', (e) => {
+  if (e.target.matches('[data-run], input[name=running_format]')) { fromForm(); refreshExamples() }
+})
+document.addEventListener('change', (e) => {
+  if (e.target.matches('input[name=running_format]')) { fromForm(); refreshExamples() }
+})
+
+$('btn-save').addEventListener('click', save)
+$('btn-preview').addEventListener('click', preview)
+$('btn-reset').addEventListener('click', () => {
+  if (!confirm('คืนค่าเริ่มต้นทั้งหมด? ค่าที่ปรับไว้ในหน้านี้จะหาย (ยังไม่บันทึกจนกดบันทึกข้อมูล)')) return
+  state = clone(DEFAULTS)
+  toForm()
+})
+$('ov-close').addEventListener('click', () => $('ov').classList.remove('open'))
+
+// ไฮไลต์เมนูซ้ายตามหัวข้อที่กำลังดู
+const cards = ['fn', 'runno', 'design', 'titles'].map((id) => $(id))
+const links = [...document.querySelectorAll('.sidenav a')]
+const spy = new IntersectionObserver((entries) => {
+  for (const en of entries) {
+    if (!en.isIntersecting) continue
+    const i = cards.indexOf(en.target)
+    links.forEach((a, j) => a.classList.toggle('on', i === j))
+  }
+}, { rootMargin: '-20% 0px -70% 0px' })
+cards.forEach((c) => spy.observe(c))
+
+load()
+</script>
+</body>
+</html>
